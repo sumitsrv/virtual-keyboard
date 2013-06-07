@@ -24,3 +24,12 @@
 
 #data files
 *.dat
+
+#executables
+webcam
+a.out
+ocrtest
+edge
+haar
+main
+
