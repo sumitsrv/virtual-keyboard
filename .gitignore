@@ -20,3 +20,7 @@
 *.png
 *.jpeg
 *.jpg
+*.bmp
+
+#data files
+*.dat
