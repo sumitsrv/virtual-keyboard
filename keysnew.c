@@ -7,8 +7,8 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include "colorEdge.h"
-#include "edge.h"
+#include "colorEdge.hpp"
+#include "edge.hpp"
 #include <sys/stat.h>
 #include <stdio.h>
 

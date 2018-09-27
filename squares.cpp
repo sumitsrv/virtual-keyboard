@@ -9,8 +9,8 @@
 
 #define CV_NO_BACKWARD_COMPATIBILITY
 
-#include "cv.h"
-#include "highgui.h"
+#include <opencv/cv.hpp>
+#include <opencv2/highgui.hpp>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -223,4 +223,4 @@ int main(int argc, char** argv)
     cvDestroyWindow( wndname );
 
     return 0;
-}
+};
