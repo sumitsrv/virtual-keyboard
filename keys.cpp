@@ -14,9 +14,16 @@
 #define BG 0
 #define CREATE_DATA_SET 0
 #define ON_WORK 1
+#define THRESH_1 150
+#define THRESH_2 200
+
+using namespace std;
+using namespace cv;
 
 class Keys {
 
+    int count1 = 0, count2 = 0, count3=0;
+    CvMemStorage* storage=0;
 
     double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )
     {
@@ -27,19 +34,19 @@ class Keys {
         return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
     }
 
-    CvSeq* findSquares4( IplImage* img, CvMemStorage* storage )
+    CvSeq* findSquares4( Mat img, Mat storage )
     {
         CvSeq* contours;
         int i, c, l, N = 20;
-        CvSize sz = cvSize( img->width & -2, img->height & -2 );
-        IplImage* timg = cvCloneImage( img );
-        IplImage* extimg = cvCloneImage( img );
+        Size sz = Size( img.cols & -2, img.rows & -2 );
+        Mat timg = img.clone();
+        Mat extimg = img.clone();
         //IplImage* extra = cvCreateImage(sz, CV_16S, 3);;
 
-        cvCvtColor(extimg, timg, CV_BGR2HSV);
-        IplImage* gray = cvCreateImage( sz, 8, 1 );
+        cvtColor(extimg, timg, CV_BGR2HSV);
+        Mat gray = Mat( sz, 8, 1 );
         // IplImage* pyr = cvCreateImage( cvSize(sz.width/2, sz.height/2), 8, 3 );
-        IplImage* tgray;
+        Mat tgray;
         CvSeq* result;
         double s, t, ang[4];
         // create empty sequence that will contain points -
@@ -48,9 +55,10 @@ class Keys {
 
         // select the maximum ROI in the image
         // with the width and height divisible by 2
-        cvSetImageROI( timg, cvRect( 0, 0, sz.width, sz.height ));
+        Rect roi( 0, 0, sz.width, sz.height );
+        timg = Mat(roi);
 
-        tgray = cvCreateImage( sz, 8, 1 );
+        tgray = Mat( sz, 8, 1 );
 
         // find squares in every color plane of the image
         for( c = 2; c < 4; c++ )
@@ -58,13 +66,13 @@ class Keys {
             // extract the c-th color plane
             if(c<3)
             {
-                cvSetImageCOI( timg, c+1 );
-                cvCopy( timg, tgray, 0 );
+//                cvSetImageCOI( timg, c+1 );
+                copy( timg, tgray, 0 );
             }
             else
             {
-                cvSetImageCOI(timg, 0);
-                cvCvtColor(extimg, tgray, CV_BGR2GRAY);
+//                cvSetImageCOI(timg, 0);
+                cvtColor(extimg, tgray, CV_BGR2GRAY);
                 //colorEdge(timg, tgray);
                 //cvEqualizeHist( tgray, tgray );
             }
@@ -78,33 +86,31 @@ class Keys {
                 {
                     // apply Canny. Take the upper threshold from slider
                     // and set the lower to 0 (which forces edges merging)
-                    cvCanny( tgray, gray, thresh1, thresh2, 3 );
-
+                    Canny( tgray, gray, THRESH_1, THRESH_2, 3 );
                     remove_loose_ends(gray);
-                    //cvShowImage("juzz",tgray);
-                    //cvShowImage("canny",gray);
                 }
                 else
                 {
                     // apply threshold if l!=0:
                     //     tgray(x,y) = gray(x,y) < (l+1)*255/N ? 255 : 0
                     //cvErode(gray, gray, 0, 1);
-                    cvThreshold( tgray, gray, (l+1)*255/N, 255, CV_THRESH_BINARY );
+                    threshold( tgray, gray, (l+1)*255/N, 255, CV_THRESH_BINARY );
                     remove_loose_ends(gray);
                     //markLines(gray, gray, 255);
                 }
                 //cvShowImage("juzz",gray);
                 // find contours and store them all as a list
-                cvFindContours( gray, storage, &contours, sizeof(CvContour),
-                                CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0) );
+
+                findContours( gray, storage,
+                                CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, Point(0,0) );
 
                 // test each contour
-                while( contours )
+                while( storage )
                 {
                     count3++;
                     // approximate contour with accuracy proportional
                     // to the contour perimeter
-                    result = cvApproxPoly( contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, 8, 0 );
+                    result = approxPolyDP( storage, storage,  8, true );
 
                     // square contours should have 4 vertices after approximation
                     // relatively large area (to filter out noisy contours)
@@ -152,11 +158,11 @@ class Keys {
 
         //printf("count3 = %d\t count1 = %d\t count2 = %d\t",count3, count1, count2);
         // release all the temporary images
-        cvReleaseImage( &gray );
-        //cvReleaseImage( &pyr );
-        cvReleaseImage( &tgray );
-        cvReleaseImage( &timg );
-        cvReleaseImage( &extimg);
+//        cvReleaseImage( &gray );
+//        //cvReleaseImage( &pyr );
+//        cvReleaseImage( &tgray );
+//        cvReleaseImage( &timg );
+//        cvReleaseImage( &extimg);
         return squares;
     }
 
@@ -261,7 +267,7 @@ class Keys {
 
         fclose(keyinfo);
 
-        cvShowImage( wndname, cpy );
+        cvShowImage( "Keys Detection", cpy );
         cvReleaseImage( &cpy );
     }
 
@@ -283,8 +289,8 @@ class Keys {
 
         // create window and a trackbar (slider) with parent "image" and set callback
         // (the slider regulates upper threshold, passed to Canny edge detector)
-        cvNamedWindow( wndname, 1 );
-        cvMoveWindow(wndname, img->width, 0);
+        cvNamedWindow( "Keys Detection", 1 );
+        cvMoveWindow("Keys Detection", img->width, 0);
         // find and draw the squares
         drawSquares( img, findSquares4( img, storage ), original, CREATE_DATA_SET );
 
@@ -296,13 +302,13 @@ class Keys {
         // clear memory storage - reset free space position
         cvClearMemStorage( storage );
 
-        cvDestroyWindow( wndname );
+        cvDestroyWindow( "Keys Detection" );
 
         return 0;
     }
 
 
-    void remove_loose_ends(IplImage* canny)
+    void remove_loose_ends(Mat canny)
     {
         IplImage* clone = cvCloneImage(canny);
 

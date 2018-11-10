@@ -10,13 +10,17 @@ using namespace std;
 using namespace cv;
 
 class Edge{
-    void drawEdge(IplImage* img)
+    void drawEdge(Mat img)
     {
-        IplImage  *edge=0, *grey=0, *resize=0, *grey_eqz=0;
+        Mat edge;
+        Mat grey;
+        Mat resize;
+        Mat grey_eqz;
+
         int size = 500, height, width, scale;
 
-        height = img->height;
-        width = img->width;
+        height = img.rows;
+        width = img.cols;
         scale = (height > width)? height: width;
         scale = scale/size;
 
@@ -24,38 +28,43 @@ class Edge{
         height = height/scale;
         width = width/scale;
 
-        resize = cvCreateImage(cvSize(width, height), img->depth, img->nChannels);
+        resize = Mat(Size(width, height), img.depth());
+//        resize = cvCreateImage(cvSize(width, height), img->depth, img->nChannels);
 
-        grey  = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-        grey_eqz = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-        edge  = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+        grey  = Mat(img.rows, img.cols, IPL_DEPTH_8U, 1);
+        grey_eqz = Mat(img.rows, img.cols, IPL_DEPTH_8U, 1);
+        edge  = Mat(img.rows, img.cols, IPL_DEPTH_8U, 1);
 
-        cvCvtColor(img, grey, CV_BGR2GRAY);
-        cvCanny(grey, edge, 150, 200, 3);
-        cvShowImage("Canny", edge);
-        IplImage* color_dst = cvCreateImage( cvGetSize(grey), 8, 3 );
+//        grey  = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+//        grey_eqz = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+//        edge  = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+
+        cvtColor(img, grey, CV_BGR2GRAY);
+        Canny(grey, edge, 150, 200, 3);
+        imshow("Canny", edge);
+        Mat color_dst = Mat( grey.rows, grey.cols, 8, 3 );
         color_dst = getAndMarkLines(edge, edge, 255);
 
-        cvShowImage("Image",img);
-        cvShowImage("GRAY",grey);
+        imshow("Image",img);
+        imshow("GRAY",grey);
 
-        cvShowImage("Lines", color_dst);
+        imshow("Lines", color_dst);
 
         cvWaitKey(0);
-        cvDestroyWindow("Canny");
-        cvDestroyWindow("Image");
-        cvDestroyWindow("GRAY");
-        cvReleaseImage(&edge);
-        cvReleaseImage(&grey);
+//        cvDestroyWindow("Canny");
+//        cvDestroyWindow("Image");
+//        cvDestroyWindow("GRAY");
+//        edge = 0;
+//        grey = 0;
     }
 
 
-    IplImage* getAndMarkLines(IplImage* srcimg, IplImage *dstimg, int linecolor)
+    Mat getAndMarkLines(Mat srcimg, Mat dstimg, int linecolor)
     {
         Mat src(srcimg);
         Mat dst(dstimg);
 
-        IplImage* color_dst_img = cvCreateImage( cvGetSize(srcimg), 8, 3 );
+        Mat color_dst_img = Mat( srcimg.rows, srcimg.cols, 8, 3 );
 
         Mat color_dst(color_dst_img);
 
@@ -69,10 +78,11 @@ class Edge{
                     Point(lines[i][2], lines[i][3]), linecolor, 1, 8 );
         }
 
-        IplImage* return_img = cvCreateImage(cvGetSize(srcimg), 8, 1);
-        CvMat oldmat = dst;
+        return dst;
+//        Mat return_img = Mat(srcimg.rows, srcimg.cols, 8, 1);
+//        CvMat oldmat = dst;
 
-        return cvGetImage(&oldmat, return_img);
+//        return cvGetImage(&oldmat, return_img);
     }
 
 };

@@ -17,7 +17,7 @@ class Haar {
         cvCopy(img, copy, NULL);
 
         //cvCopy(copy, img, NULL);
-        Haar(copy, img, 1);
+        haar(copy, img, 1);
 
         IplImage* downscaled = cvCreateImage(cvSize(sz.width/2, sz.height/2), depth, nchannels);
         IplImage* upscaled = cvCreateImage(cvSize(sz.width, sz.height), depth, nchannels);
@@ -48,7 +48,7 @@ class Haar {
     }
 
 
-    void Haar(IplImage *img, IplImage *copy, int scale)
+    void haar(IplImage *img, IplImage *copy, int scale)
     {
         int width = img->width;
         int height = img->height;

@@ -3,10 +3,8 @@
 
 class Keys{
 public:
-    int count1=0, count2=0, count3=0;
-    int thresh1 = 150, thresh2 = 200;
-    CvMemStorage* storage = 0;
-    const char* wndname = "Keys Detection";
+    int count1, count2, count3;
+    CvMemStorage* storage;
 
     void remove_loose_ends(IplImage*);
     void drawSquares( IplImage* img, CvSeq* squares, IplImage* original, int mode );
