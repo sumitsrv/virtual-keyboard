@@ -1,16 +1,36 @@
 #ifndef KEYS_HPP
 #define KEYS_HPP
 
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/highgui.hpp"
+
+#define CV_NO_BACKWARD_COMPATIBILITY
+
+#define FG 255
+#define BG 0
+#define CREATE_DATA_SET 0
+#define ON_WORK 1
+#define THRESH_1 150
+#define THRESH_2 200
+
+using namespace std;
+using namespace cv;
+
 class Keys{
 public:
     int count1, count2, count3;
     CvMemStorage* storage;
 
-    void remove_loose_ends(IplImage*);
-    void drawSquares( IplImage* img, CvSeq* squares, IplImage* original, int mode );
-    CvSeq* findSquares4( IplImage* img, CvMemStorage* storage );
-    double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 );
-    int locate(IplImage*, IplImage*);
+    const int thresh = 50, N = 11;
+    const char* wndname = "Square Detection Demo";
+
+    double angle( Point, Point, Point );
+    void remove_loose_ends(Mat);
+    void drawSquares( Mat&, const vector<vector<Point> >&  );
+    void findSquares( const Mat& , vector<vector<Point> >& );
+    int locate(Mat, Mat);
 };
 
 #endif

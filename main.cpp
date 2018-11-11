@@ -11,11 +11,14 @@
 #include "contrast.hpp"
 #include "ocr.hpp"
 
+using namespace std;
+using namespace cv;
+
 int main(int argc, char* argv[])
 {
     WebCam webcam = WebCam();
-    CvCapture *capture = 0;
-    IplImage *img = 0;
+    VideoCapture capture = 0;
+    Mat img;
 
     if( argc < 3 )
     {
@@ -25,19 +28,19 @@ int main(int argc, char* argv[])
     else if (argv[2][0] == '1')
     {
         /* initialize camera */
-        capture = cvCaptureFromCAM(0);
+        capture = VideoCapture(0);
         /* always check */
-        if ( !capture ) {
+        if ( capture.isOpened() ) {
             fprintf( stderr, "Cannot open initialize webcam!\n" );
             fprintf( stderr, "Usage: loadimg <filename> <cam(1)/image(2)>\n" );
             return 1;
         }
         webcam.capture(capture, argv[1]);
-        img = cvLoadImage(argv[1],-1);
+        img = imread(argv[1],-1);
     }
     else if(argv[2][0] == '2')
     {
-        img = cvLoadImage(argv[1],-1);
+        img = imread(argv[1],-1);
     }
     else
     {
@@ -45,19 +48,19 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if( img == 0 )
+    if( countNonZero(img) < 1  )
     {
         fprintf( stderr, "Cannot load file %s!\n", argv[1] );
         return 1;
     }
     
-    int depth = img->depth;
+    int depth = img.depth();
 
-    CvSize sz = cvSize( img->width & -2, img->height & -2 );
+    Size sz = Size( img.cols & -2, img.rows & -2 );
 
-    IplImage* gray = cvCreateImage(cvSize(sz.width, sz.height), depth, 1);
-    IplImage* copy = cvCreateImage(cvSize(sz.width, sz.height), depth, 3);
-    cvCvtColor(img, gray, CV_BGR2GRAY);
+    Mat gray = Mat(cvSize(sz.width, sz.height), depth, 1);
+    Mat copy = Mat(cvSize(sz.width, sz.height), depth, 3);
+    cvtColor(img, gray, CV_BGR2GRAY);
     //gray= haar(img, gray);
     //edge(img);
     //colorEdge(img, gray);
@@ -69,8 +72,8 @@ int main(int argc, char* argv[])
     //ocr();
     //cvShowImage("img",img);
     //cvWaitKey(0);
-    cvReleaseImage(&img);
-    cvReleaseImage(&copy);
-    cvReleaseImage(&gray);
+//    cvReleaseImage(&img);
+//    cvReleaseImage(&copy);
+//    cvReleaseImage(&gray);
     return 0;
 }

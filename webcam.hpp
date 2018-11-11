@@ -1,10 +1,17 @@
 #ifndef WEBCAM_HPP
 #define WEBCAM_HPP
 
+#include <iostream>
+#include <opencv/cv.hpp>
+#include <opencv2/highgui.hpp>
+
+using namespace cv;
+using namespace std;
+
 class WebCam {
 public:
-    int capture(CvCapture *, char*);
-    void mouseHandler(int event, int x, int y, int flags, void *param);
-    int end = 0;
+    int capture(VideoCapture, char*);
+    void mouseHandler(int event, int x, int y, int flags, void *img);
+    int end;
 };
 #endif
