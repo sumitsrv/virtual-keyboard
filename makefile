@@ -1,10 +1,10 @@
-all: main
+all: vk
 
 clean:
 	rm -rf *.o
 
-main: main.o webcam.o edge.o haar.o keys.o colorEdge.o contrast.o ocr.o
-	g++ -Wall -ansi `pkg-config opencv --cflags --libs` -o main main.o haar.o edge.o keys.o webcam.o colorEdge.o contrast.o ocr.o
+vk: main.o webcam.o edge.o haar.o keys.o colorEdge.o contrast.o ocr.o
+	g++ -Wall -ansi `pkg-config opencv --cflags --libs` -o vk main.o haar.o edge.o keys.o webcam.o colorEdge.o contrast.o ocr.o
 
 main.o: main.cpp
 	g++ -Wall -ansi `pkg-config opencv --cflags --libs` -c main.cpp
