@@ -32,6 +32,7 @@ ocrtest
 edge
 haar
 main
+vk
 
 #qt files
 virtual-keyboard.config
