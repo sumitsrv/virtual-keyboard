@@ -10,8 +10,8 @@ using namespace std;
 
 class WebCam {
 public:
-    int capture(VideoCapture, char*);
-    void mouseHandler(int event, int x, int y, int flags, void *img);
-    int end;
+  int capture(VideoCapture, char *);
+  static void mouseHandler(int event, int x, int y, int flags, void *img);
+  int end;
 };
 #endif

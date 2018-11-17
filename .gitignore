@@ -33,3 +33,10 @@ edge
 haar
 main
 
+#qt files
+virtual-keyboard.config
+virtual-keyboard.creator
+virtual-keyboard.creator.user
+virtual-keyboard.files
+virtual-keyboard.includes
+
