@@ -1,6 +1,10 @@
 #include "webcam.hpp"
 
-WebCam::WebCam(const WebCam &obj) {}
+
+WebCam::WebCam()
+{
+
+}
 
 signals::connection
 WebCam::subscribeToCamStream(const FrameGrabEvent::slot_type &slot) {

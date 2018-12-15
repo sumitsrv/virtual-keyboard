@@ -8,7 +8,6 @@ void HandDetect::getKeyPress(Mat frame) const {
 
   printf("Frame received!\n");
 
-  //    cvDestroyWindow("handdetect");
   //  Size sz = Size(src.cols, src.rows);
 
   //  Mat hsv_image = Mat(sz, 8, 3);
