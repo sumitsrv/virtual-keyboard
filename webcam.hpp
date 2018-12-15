@@ -16,7 +16,6 @@ class WebCam {
 public:
   typedef signal<void(Mat frame)> FrameGrabEvent;
 
-  WebCam();
   int capture(VideoCapture, char *);
   static void mouseHandler(int event, int x, int y, int flags, void *img);
   void stream(VideoCapture);

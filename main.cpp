@@ -16,7 +16,7 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, char *argv[]) {
-  WebCam webcam = WebCam();
+  WebCam webcam;
   HandDetect *handDetect = new HandDetect(webcam);
   VideoCapture capture;
   Mat img;
