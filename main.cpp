@@ -10,12 +10,14 @@
 #include "keys.hpp"
 #include "ocr.hpp"
 #include "webcam.hpp"
+#include "handdetect.hpp"
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char *argv[]) {
   WebCam webcam = WebCam();
+  HandDetect *handDetect = new HandDetect(webcam);
   VideoCapture capture;
   Mat img;
 
@@ -56,23 +58,16 @@ int main(int argc, char *argv[]) {
 
   Mat gray = Mat(cvSize(sz.width, sz.height), depth, 1);
   Mat copy = Mat(cvSize(sz.width, sz.height), depth, 3);
-  cvtColor(img, gray, CV_BGR2GRAY);
-  // gray= haar(img, gray);
-  // edge(img);
-  // colorEdge(img, gray);
-  Contrast contrast = Contrast();
-  contrast.glg(img);
 
-  Keys keys = Keys();
-  keys.locate(img, gray);
+  webcam.stream(capture);
+//  cvtColor(img, gray, CV_BGR2GRAY);
+//  Contrast contrast = Contrast();
+//  contrast.glg(img);
 
-  imshow("Keys", img);
+//  Keys keys = Keys();
+//  keys.locate(img, gray);
+
+//  imshow("Keys", img);
   waitKey(10000);
-  // ocr();
-  // cvShowImage("img",img);
-  // cvWaitKey(0);
-  //    cvReleaseImage(&img);
-  //    cvReleaseImage(&copy);
-  //    cvReleaseImage(&gray);
   return 0;
 }

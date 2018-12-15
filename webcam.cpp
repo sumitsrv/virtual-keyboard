@@ -1,5 +1,16 @@
 #include "webcam.hpp"
 
+WebCam::WebCam(const WebCam &obj) {}
+
+signals::connection
+WebCam::subscribeToCamStream(const FrameGrabEvent::slot_type &slot) {
+  return this->frameGrabEvent.connect(slot);
+}
+
+void WebCam::unsubscribeToCamStream(const signals::connection &connection) {
+  connection.disconnect();
+}
+
 int WebCam::capture(VideoCapture capture, char *img_name) {
 
   Mat frame;
@@ -47,7 +58,7 @@ void WebCam::mouseHandler(int event, int x, int y, int, void *img) {
   switch (event) {
   /* left button down */
   case CV_EVENT_LBUTTONDOWN:
-    cout << "LEft" << endl;
+    cout << "Left" << endl;
     break;
 
     /* right button down */
@@ -59,4 +70,34 @@ void WebCam::mouseHandler(int event, int x, int y, int, void *img) {
   case CV_EVENT_MOUSEMOVE:
     break;
   }
+}
+
+void WebCam::stream(VideoCapture capture) {
+  Mat frame;
+  int key = 0;
+
+  capture >> frame;
+
+  if (frame.empty()) {
+    printf("Could not grab a frame!\n");
+    exit(0);
+  }
+  while (key != 27) {
+    /* get a frame */
+    capture >> frame;
+
+    /* always check */
+    if (frame.empty()) {
+      printf("Error grabbing frame, exiting!\n");
+      break;
+    }
+    imshow("handdetect", frame);
+    this->frameGrabEvent(frame);
+    /* exit if user press 'q' */
+    key = cvWaitKey(5);
+  }
+
+  this->frameGrabConnection.disconnect();
+  destroyWindow("handdetect");
+  capture.release();
 }
