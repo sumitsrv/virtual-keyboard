@@ -25,9 +25,16 @@ public:
                       // flag; [][6]->direction at point of deflection
 
   HandDetect(WebCam& webcam);
-  int getTipsCount(Mat img, int width, int height);
+  int getTipsCount(Mat img);
   void correlatedTips(int);
-  void getKeyPress(Mat frame) const;
+  void getKeyPress(Mat frame);
+
+  int getMaxSpeedFingerIndex(int tipCount);
+  
+  void preserveAndGetHandOutline(Mat src);
+
+private:
+  boost::signals::connection frameGrabEventConnection;
 };
 
 #endif

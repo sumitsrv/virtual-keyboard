@@ -59,15 +59,16 @@ int main(int argc, char *argv[]) {
   Mat gray = Mat(cvSize(sz.width, sz.height), depth, 1);
   Mat copy = Mat(cvSize(sz.width, sz.height), depth, 3);
 
+  cvtColor(img, gray, CV_BGR2GRAY);
+  Contrast contrast = Contrast();
+  contrast.glg(img);
+
+  Keys keys = Keys();
+  keys.locate(img, gray);
+
+  imshow("Keys", img);
+
   webcam.stream(capture);
-//  cvtColor(img, gray, CV_BGR2GRAY);
-//  Contrast contrast = Contrast();
-//  contrast.glg(img);
 
-//  Keys keys = Keys();
-//  keys.locate(img, gray);
-
-//  imshow("Keys", img);
-  waitKey(10000);
   return 0;
 }
