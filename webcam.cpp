@@ -1,5 +1,9 @@
 #include "webcam.hpp"
 
+using namespace std;
+using namespace cv;
+using namespace boost;
+
 signals::connection
 WebCam::subscribeToCamStream(const FrameGrabEvent::slot_type &slot) {
   return this->frameGrabEvent.connect(slot);

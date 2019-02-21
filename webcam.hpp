@@ -7,25 +7,21 @@
 #include <opencv/cv.hpp>
 #include <opencv2/highgui.hpp>
 
-using namespace cv;
-using namespace std;
-using namespace boost;
-
 class WebCam {
 
 public:
-  typedef signal<void(Mat frame)> FrameGrabEvent;
+  typedef boost::signal<void(cv::Mat frame)> FrameGrabEvent;
 
-  int capture(VideoCapture, char *);
+  int capture(cv::VideoCapture, char *);
   static void mouseHandler(int event, int x, int y, int flags, void *img);
-  void stream(VideoCapture);
+  void stream(cv::VideoCapture);
   int end;
 
-  void unsubscribeToCamStream(const signals::connection &connection);
-  signals::connection subscribeToCamStream(const FrameGrabEvent::slot_type &slot);
+  void unsubscribeToCamStream(const boost::signals::connection &connection);
+  boost::signals::connection subscribeToCamStream(const FrameGrabEvent::slot_type &slot);
 
 private:
-  signals::connection frameGrabConnection;
+  boost::signals::connection frameGrabConnection;
   FrameGrabEvent frameGrabEvent;
 };
 #endif

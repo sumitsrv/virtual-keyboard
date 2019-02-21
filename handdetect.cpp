@@ -1,5 +1,8 @@
 #include "handdetect.hpp"
 
+using namespace cv;
+using namespace std;
+
 HandDetect::HandDetect(WebCam &webcam) {
   this->frameGrabEventConnection = webcam.subscribeToCamStream(
       boost::bind(&HandDetect::getKeyPress, this, _1));

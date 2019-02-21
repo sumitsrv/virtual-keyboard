@@ -1,23 +1,12 @@
-#include <iostream>
-#include <opencv/cv.hpp>
-#include <opencv2/highgui.hpp>
-#include <stdlib.h>
-
-#include "colorEdge.hpp"
-#include "contrast.hpp"
-#include "edge.hpp"
-#include "haar.hpp"
-#include "keys.hpp"
-#include "ocr.hpp"
 #include "webcam.hpp"
-#include "handdetect.hpp"
+#include "contrast.hpp"
+#include "keys.hpp"
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char *argv[]) {
   WebCam webcam;
-  HandDetect *handDetect = new HandDetect(webcam);
   VideoCapture capture;
   Mat img;
 
@@ -68,6 +57,7 @@ int main(int argc, char *argv[]) {
 
   imshow("Keys", img);
 
+  waitKey(5000);
   webcam.stream(capture);
 
   return 0;

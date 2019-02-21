@@ -8,9 +8,6 @@
 
 #define FRAMERUN 50
 
-using namespace cv;
-using namespace std;
-
 class HandDetect {
 public:
   size_t count_bgupdate = 0;
@@ -25,13 +22,13 @@ public:
                       // flag; [][6]->direction at point of deflection
 
   HandDetect(WebCam& webcam);
-  int getTipsCount(Mat img);
+  int getTipsCount(cv::Mat img);
   void correlatedTips(int);
-  void getKeyPress(Mat frame);
+  void getKeyPress(cv::Mat frame);
 
   int getMaxSpeedFingerIndex(int tipCount);
   
-  void preserveAndGetHandOutline(Mat src);
+  void preserveAndGetHandOutline(cv::Mat src);
 
 private:
   boost::signals::connection frameGrabEventConnection;

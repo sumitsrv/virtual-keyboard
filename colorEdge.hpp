@@ -1,19 +1,15 @@
 #ifndef COLOREDGE_HPP
 #define COLOREDGE_HPP
 
-#include<opencv2/highgui.hpp>
-#include<opencv/cv.hpp>
-#include<iostream>
-#include<stdlib.h>
-#include<math.h>
+#include <iostream>
+#include <math.h>
+#include <opencv/cv.hpp>
+#include <opencv2/highgui.hpp>
 
 #define PI 3.14159265
 
-using namespace std;
-using namespace cv;
-
 class ColorEdge {
 public:
-    void colorEdge(Mat img, Mat copy);
+  void colorEdge(cv::Mat img, cv::Mat copy);
 };
 #endif

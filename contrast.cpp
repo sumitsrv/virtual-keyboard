@@ -1,5 +1,8 @@
 #include "contrast.hpp"
 
+using namespace std;
+using namespace cv;
+
 /**
  * @brief Contrast::glg
  * @param img

@@ -1,6 +1,7 @@
 #include "keys.hpp"
-#include "colorEdge.hpp"
-#include "edge.hpp"
+
+using namespace std;
+using namespace cv;
 
 double Keys::angle(Point pt1, Point pt2, Point pt0) {
   double dx1 = pt1.x - pt0.x;
@@ -93,6 +94,21 @@ void Keys::drawSquares(Mat &image, const vector<vector<Point> > &squares) {
   }
 }
 
+// the function draws all the squares in the image
+void Keys::saveSquares(const Mat &image, const vector<vector<Point> > &squares) {
+  for (size_t i = 0; i < squares.size(); i++) {
+    const Point *p = &squares[i][0];
+    if(p[2].x <= p[0].x || p[2].y <= p[0].y ){
+        continue;
+    }
+    Rect ro(p[0].x, p[0].y,  p[2].x  - p[0].x, p[2].y - p[0].y );
+
+    stringstream fileName;
+    fileName << "./ocr_temp_data/key" << (int)i << ".png";
+    imwrite(fileName.str(), image(ro));
+  }
+}
+
 int Keys::locate(Mat img, Mat original) {
   int c;
   // create memory storage that will contain all the dynamic data
@@ -117,6 +133,7 @@ int Keys::locate(Mat img, Mat original) {
 
   findSquares(img, squares);
   drawSquares(img, squares);
+  saveSquares(img, squares);
 
   // wait for key.
   // Also the function cvWaitKey takes care of event processing
