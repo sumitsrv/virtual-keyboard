@@ -1,12 +1,16 @@
 #include "webcam.hpp"
 #include "contrast.hpp"
 #include "keys.hpp"
+#include "handdetect.hpp"
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char *argv[]) {
   WebCam webcam;
+
+  // Hand detection module initialized to listen to frames captured by webcam.
+  HandDetect *handdetect = new HandDetect(webcam);
   VideoCapture capture;
   Mat img;
 
