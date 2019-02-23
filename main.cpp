@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   contrast.glg(img);
 
   Keys keys = Keys();
-  keys.locate(img, gray);
+  keys.locate(img);
 
   imshow("Keys", img);
 

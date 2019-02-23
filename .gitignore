@@ -41,3 +41,5 @@ virtual-keyboard.creator.user
 virtual-keyboard.files
 virtual-keyboard.includes
 
+#temp data
+./ocr_temp_data

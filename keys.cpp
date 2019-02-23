@@ -3,6 +3,10 @@
 using namespace std;
 using namespace cv;
 
+Keys::Keys(){
+    ocr = OCR();
+}
+
 double Keys::angle(Point pt1, Point pt2, Point pt0) {
   double dx1 = pt1.x - pt0.x;
   double dy1 = pt1.y - pt0.y;
@@ -12,7 +16,45 @@ double Keys::angle(Point pt1, Point pt2, Point pt0) {
          sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
 }
 
-// returns sequence of squares detected on the image.
+/**
+ * Returns sequence of squares detected on the image.
+ * */
+void Keys::evaluateContourFitness(vector<vector<Point> > &squares, vector<vector<Point> > &contours)
+{
+    vector<Point> approx;
+
+    for (size_t i = 0; i < contours.size(); i++) {
+      // approximate contour with accuracy proportional
+      // to the contour perimeter
+      approxPolyDP(contours[i], approx, arcLength(contours[i], true) * 0.02,
+                   true);
+
+      // square contours should have 4 vertices after approximation
+      // relatively large area (to filter out noisy contours)
+      // and be convex.
+      // Note: absolute value of an area is used because
+      // area may be positive or negative - in accordance with the
+      // contour orientation
+      if (approx.size() == 4 && fabs(contourArea(approx)) > 1000 && fabs(contourArea(approx)) < 500000 &&
+          isContourConvex(approx)) {
+        double maxCosine = 0;
+
+        for (int j = 2; j < 5; j++) {
+          // find the maximum cosine of the angle between joint edges
+          double cosine =
+              fabs(angle(approx[j % 4], approx[j - 2], approx[j - 1]));
+          maxCosine = MAX(maxCosine, cosine);
+        }
+
+        // if cosines of all angles are small
+        // (all angles are ~90 degree) then write quandrange
+        // vertices to resultant sequence
+        if (maxCosine < 0.3)
+          squares.push_back(approx);
+      }
+    }
+}
+
 void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
   squares.clear();
 
@@ -24,7 +66,7 @@ void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
   vector<vector<Point> > contours;
 
   // find squares in every color plane of the image
-  for (int c = 0; c < 3; c++) {
+  for (int c = 0; c < image.channels(); c++) {
     int ch[] = {c, 0};
     mixChannels(&timg, 1, &gray0, 1, ch, 1);
 
@@ -46,41 +88,12 @@ void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
       }
 
       // find contours and store them all as a list
-      findContours(gray, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
+      findContours(gray, contours, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
-      vector<Point> approx;
 
-      // test each contour
-      for (size_t i = 0; i < contours.size(); i++) {
-        // approximate contour with accuracy proportional
-        // to the contour perimeter
-        approxPolyDP(contours[i], approx, arcLength(contours[i], true) * 0.02,
-                     true);
 
-        // square contours should have 4 vertices after approximation
-        // relatively large area (to filter out noisy contours)
-        // and be convex.
-        // Note: absolute value of an area is used because
-        // area may be positive or negative - in accordance with the
-        // contour orientation
-        if (approx.size() == 4 && fabs(contourArea(approx)) > 1000 &&
-            isContourConvex(approx)) {
-          double maxCosine = 0;
-
-          for (int j = 2; j < 5; j++) {
-            // find the maximum cosine of the angle between joint edges
-            double cosine =
-                fabs(angle(approx[j % 4], approx[j - 2], approx[j - 1]));
-            maxCosine = MAX(maxCosine, cosine);
-          }
-
-          // if cosines of all angles are small
-          // (all angles are ~90 degree) then write quandrange
-          // vertices to resultant sequence
-          if (maxCosine < 0.3)
-            squares.push_back(approx);
-        }
-      }
+      // Test each contour
+      evaluateContourFitness(squares, contours);
     }
   }
 }
@@ -88,6 +101,10 @@ void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
 // the function draws all the squares in the image
 void Keys::drawSquares(Mat &image, const vector<vector<Point> > &squares) {
   for (size_t i = 0; i < squares.size(); i++) {
+    int area =  contourArea(squares[i]);
+    if(area > MAX_AREA){
+        continue;
+    }
     const Point *p = &squares[i][0];
     int n = (int)squares[i].size();
     polylines(image, &p, &n, 1, true, Scalar(0, 255, 0), 3, LINE_AA);
@@ -95,6 +112,24 @@ void Keys::drawSquares(Mat &image, const vector<vector<Point> > &squares) {
 }
 
 // the function draws all the squares in the image
+Mat Keys::getDilationStructuringElement()
+{
+    int max_iters = 1;
+    int open_close_pos = 0;
+
+    int n = open_close_pos - max_iters;
+    int an = n > 0 ? n : -n;
+
+    return getStructuringElement(MORPH_RECT, Size(an*2+1, an*2+1), Point(an, an) );
+}
+
+void Keys::saveImage(string location, int fileName, Mat image)
+{
+    stringstream fileNameSrc;
+    fileNameSrc << location << fileName << ".png";
+    imwrite(fileNameSrc.str(), image);
+}
+
 void Keys::saveSquares(const Mat &image, const vector<vector<Point> > &squares) {
   for (size_t i = 0; i < squares.size(); i++) {
     const Point *p = &squares[i][0];
@@ -102,48 +137,32 @@ void Keys::saveSquares(const Mat &image, const vector<vector<Point> > &squares) 
         continue;
     }
     Rect ro(p[0].x, p[0].y,  p[2].x  - p[0].x, p[2].y - p[0].y );
+    if(contourArea(squares[i]) > MAX_AREA) {
+        return;
+    }
 
-    stringstream fileName;
-    fileName << "./ocr_temp_data/key" << (int)i << ".png";
-    imwrite(fileName.str(), image(ro));
-  }
+    Mat src = image(ro);
+    Mat grayImage;
+    Mat thresholdedImage;
+
+    cvtColor(src,grayImage, CV_BGR2GRAY);
+
+    Mat element = getDilationStructuringElement();
+
+    threshold(grayImage, thresholdedImage, 245, 255, THRESH_BINARY_INV);
+
+    Mat dilatedImage;
+
+    dilate(thresholdedImage, dilatedImage, element);
+   }
 }
 
-int Keys::locate(Mat img, Mat original) {
-  int c;
-  // create memory storage that will contain all the dynamic data
-  //           storage = new CvMemStorage();
-
+int Keys::locate(Mat source) {
   vector<vector<Point> > squares;
-  // load i-th image
-  // img0 = img1;
-  //        if( img0 == NULL)
-  //        {
-  //            printf("Couldn't load\n");
-  //        }
-//  img = img.clone();
 
-  // create window and a trackbar (slider) with parent "image" and set callback
-  // (the slider regulates upper threshold, passed to Canny edge detector)
-//  cvNamedWindow("Keys Detection", 1);
-//  cvMoveWindow("Keys Detection", img.cols, 0);
-  // find and draw the squares
-  //        drawSquares( img, findSquares4( img, &storage ), original,
-  //        CREATE_DATA_SET );
-
-  findSquares(img, squares);
-  drawSquares(img, squares);
-  saveSquares(img, squares);
-
-  // wait for key.
-  // Also the function cvWaitKey takes care of event processing
-//  c = cvWaitKey(0);
-  // release both images
-  //        cvReleaseImage( &img );
-  // clear memory storage - reset free space position
-  //        cvClearMemStorage( storage );
-
-//  cvDestroyWindow("Keys Detection");
+  findSquares(source, squares);
+  saveSquares(source, squares);
+  drawSquares(source, squares);
 
   return 0;
 }
@@ -175,11 +194,9 @@ void Keys::remove_loose_ends(Mat canny) {
             count++;
           }
         }
-        // printf("%d\t",count);
         if (count < 4)
           data[i * step + j] = FG;
       }
     }
   }
-  //        cvReleaseImage(&clone);
 }
