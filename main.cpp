@@ -1,16 +1,17 @@
-#include "webcam.hpp"
 #include "contrast.hpp"
-#include "keys.hpp"
 #include "handdetect.hpp"
+#include "keys.hpp"
+#include "webcam.hpp"
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char *argv[]) {
   WebCam webcam;
+  Keys keys = Keys();
 
   // Hand detection module initialized to listen to frames captured by webcam.
-  HandDetect *handdetect = new HandDetect(webcam);
+  HandDetect *handdetect = new HandDetect(webcam, keys);
   VideoCapture capture;
   Mat img;
 
@@ -56,7 +57,6 @@ int main(int argc, char *argv[]) {
   Contrast contrast = Contrast();
   contrast.glg(img);
 
-  Keys keys = Keys();
   keys.locate(img);
 
   imshow("Keys", img);

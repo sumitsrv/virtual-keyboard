@@ -4,8 +4,8 @@ using namespace std;
 using namespace cv;
 using namespace boost;
 
-signals::connection
-WebCam::subscribeToCamStream(const FrameGrabEvent::slot_type &slot) {
+signals::connection WebCam::subscribeToCamStream(
+    const FrameGrabEvent::slot_type &slot) {
   return this->frameGrabEvent.connect(slot);
 }
 
@@ -14,7 +14,6 @@ void WebCam::unsubscribeToCamStream(const signals::connection &connection) {
 }
 
 int WebCam::capture(VideoCapture capture, char *img_name) {
-
   Mat frame;
   int key = 0;
 
@@ -33,8 +32,7 @@ int WebCam::capture(VideoCapture capture, char *img_name) {
     capture >> frame;
 
     /* always check */
-    if (frame.empty())
-      break;
+    if (frame.empty()) break;
 
     /* display current frame */
     imshow("result", frame);
@@ -58,19 +56,19 @@ int WebCam::capture(VideoCapture capture, char *img_name) {
 
 void WebCam::mouseHandler(int event, int x, int y, int, void *img) {
   switch (event) {
-  /* left button down */
-  case CV_EVENT_LBUTTONDOWN:
-    cout << "Left" << endl;
-    break;
+    /* left button down */
+    case CV_EVENT_LBUTTONDOWN:
+      cout << "Left" << endl;
+      break;
 
-    /* right button down */
-  case CV_EVENT_RBUTTONDOWN:
-    cout << "Right" << endl;
-    break;
+      /* right button down */
+    case CV_EVENT_RBUTTONDOWN:
+      cout << "Right" << endl;
+      break;
 
-    /* mouse move */
-  case CV_EVENT_MOUSEMOVE:
-    break;
+      /* mouse move */
+    case CV_EVENT_MOUSEMOVE:
+      break;
   }
 }
 

@@ -1,8 +1,9 @@
 #ifndef KEYS_HPP
 #define KEYS_HPP
 
-#include "ocr.hpp"
 #include <iostream>
+#include <map>
+#include "ocr.hpp"
 
 #define CV_NO_BACKWARD_COMPATIBILITY
 
@@ -15,11 +16,15 @@
 #define MAX_AREA 500000
 
 class Keys {
-private:
+ private:
   OCR ocr;
-  void evaluateContourFitness(std::vector<std::vector<cv::Point> > &squares, std::vector<std::vector<cv::Point> > &contours);
+  void evaluateContourFitnessAndStore(
+      std::vector<std::vector<cv::Point> > &squares,
+      std::vector<std::vector<cv::Point> > &contours);
+  bool isValidContour(std::vector<cv::Point> approxContour);
+  std::map<int, std::string> keyMap;
 
-public:
+ public:
   Keys();
   int count1, count2, count3;
   CvMemStorage *storage;
@@ -29,13 +34,14 @@ public:
 
   double angle(cv::Point, cv::Point, cv::Point);
   void remove_loose_ends(cv::Mat);
-  void drawSquares(cv::Mat &, const std::vector<std::vector<cv::Point>> &);
-  void findSquares(const cv::Mat &, std::vector<std::vector<cv::Point>> &);
-  void saveSquares(const cv::Mat &,
-                   const std::vector<std::vector<cv::Point>> &);
+  void drawSquares(cv::Mat &, const std::vector<std::vector<cv::Point> > &);
+  void findSquares(const cv::Mat &, std::vector<std::vector<cv::Point> > &);
+  void getKeyTextFromSquares(const cv::Mat &,
+                   const std::vector<std::vector<cv::Point> > &);
   int locate(cv::Mat);
   cv::Mat getDilationStructuringElement();
   void saveImage(std::string location, int fileName, cv::Mat image);
+  std::string getKey(cv::Point);
 };
 
 #endif

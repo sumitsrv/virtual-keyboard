@@ -3,9 +3,7 @@
 using namespace std;
 using namespace cv;
 
-Keys::Keys(){
-    ocr = OCR();
-}
+Keys::Keys() { ocr = OCR(); }
 
 double Keys::angle(Point pt1, Point pt2, Point pt0) {
   double dx1 = pt1.x - pt0.x;
@@ -16,43 +14,76 @@ double Keys::angle(Point pt1, Point pt2, Point pt0) {
          sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
 }
 
+string Keys::getKey(Point touchPoint) {
+  cout << "Getting key for touchpoint: " << touchPoint << endl;
+
+  return "touchPoint.x";
+}
+
+/**
+ * Square contours should have 4 vertices after approximation,
+ * relatively large area (to filter out noisy contours) and be convex. It
+ * shouldn't be very large either.
+ *
+ * Note: Absolute value of an area is used because area may be positive or
+ * negative - in accordance with the contour orientation.
+ *
+ * @brief Keys::isValidContour
+ * @param approxContour
+ * @return
+ */
+bool Keys::isValidContour(vector<Point> approxContour) {
+  if (approxContour.size() != 4) {
+    return false;
+  }
+
+  if (fabs(contourArea(approxContour)) < 1000 ||
+      fabs(contourArea(approxContour)) >= 500000) {
+    return false;
+  }
+  if (!isContourConvex(approxContour)) {
+    return false;
+  }
+  double maxCosine = 0;
+
+  for (int j = 2; j < 5; j++) {
+    // find the maximum cosine of the angle between joint edges
+    double cosine = fabs(angle(approxContour[j % 4], approxContour[j - 2],
+                               approxContour[j - 1]));
+    maxCosine = MAX(maxCosine, cosine);
+  }
+
+  // if cosines of all angles are small
+  // (all angles are ~90 degree) then write quandrange
+  // vertices to resultant sequence
+  if (maxCosine >= 0.3) {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * Returns sequence of squares detected on the image.
- * */
-void Keys::evaluateContourFitness(vector<vector<Point> > &squares, vector<vector<Point> > &contours)
-{
-    vector<Point> approx;
+ *
+ * @brief Keys::evaluateContourFitnessAndStore
+ * @param squares
+ * @param contours
+ */
+void Keys::evaluateContourFitnessAndStore(vector<vector<Point> > &squares,
+                                          vector<vector<Point> > &contours) {
+  vector<Point> approxContour;
 
-    for (size_t i = 0; i < contours.size(); i++) {
-      // approximate contour with accuracy proportional
-      // to the contour perimeter
-      approxPolyDP(contours[i], approx, arcLength(contours[i], true) * 0.02,
-                   true);
+  for (size_t i = 0; i < contours.size(); i++) {
+    // approximate contour with accuracy proportional
+    // to the contour perimeter
+    approxPolyDP(contours[i], approxContour,
+                 arcLength(contours[i], true) * 0.02, true);
 
-      // square contours should have 4 vertices after approximation
-      // relatively large area (to filter out noisy contours)
-      // and be convex.
-      // Note: absolute value of an area is used because
-      // area may be positive or negative - in accordance with the
-      // contour orientation
-      if (approx.size() == 4 && fabs(contourArea(approx)) > 1000 && fabs(contourArea(approx)) < 500000 &&
-          isContourConvex(approx)) {
-        double maxCosine = 0;
-
-        for (int j = 2; j < 5; j++) {
-          // find the maximum cosine of the angle between joint edges
-          double cosine =
-              fabs(angle(approx[j % 4], approx[j - 2], approx[j - 1]));
-          maxCosine = MAX(maxCosine, cosine);
-        }
-
-        // if cosines of all angles are small
-        // (all angles are ~90 degree) then write quandrange
-        // vertices to resultant sequence
-        if (maxCosine < 0.3)
-          squares.push_back(approx);
-      }
+    if (isValidContour(approxContour)) {
+      squares.push_back(approxContour);
     }
+  }
 }
 
 void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
@@ -90,10 +121,8 @@ void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
       // find contours and store them all as a list
       findContours(gray, contours, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
-
-
       // Test each contour
-      evaluateContourFitness(squares, contours);
+      evaluateContourFitnessAndStore(squares, contours);
     }
   }
 }
@@ -101,9 +130,9 @@ void Keys::findSquares(const Mat &image, vector<vector<Point> > &squares) {
 // the function draws all the squares in the image
 void Keys::drawSquares(Mat &image, const vector<vector<Point> > &squares) {
   for (size_t i = 0; i < squares.size(); i++) {
-    int area =  contourArea(squares[i]);
-    if(area > MAX_AREA){
-        continue;
+    double area = contourArea(squares[i]);
+    if (area > MAX_AREA) {
+      continue;
     }
     const Point *p = &squares[i][0];
     int n = (int)squares[i].size();
@@ -112,56 +141,66 @@ void Keys::drawSquares(Mat &image, const vector<vector<Point> > &squares) {
 }
 
 // the function draws all the squares in the image
-Mat Keys::getDilationStructuringElement()
-{
-    int max_iters = 1;
-    int open_close_pos = 0;
+Mat Keys::getDilationStructuringElement() {
+  int max_iters = 1;
+  int open_close_pos = 0;
 
-    int n = open_close_pos - max_iters;
-    int an = n > 0 ? n : -n;
+  int n = open_close_pos - max_iters;
+  int an = n > 0 ? n : -n;
 
-    return getStructuringElement(MORPH_RECT, Size(an*2+1, an*2+1), Point(an, an) );
+  return getStructuringElement(MORPH_RECT, Size(an * 2 + 1, an * 2 + 1),
+                               Point(an, an));
 }
 
-void Keys::saveImage(string location, int fileName, Mat image)
-{
-    stringstream fileNameSrc;
-    fileNameSrc << location << fileName << ".png";
-    imwrite(fileNameSrc.str(), image);
+void Keys::saveImage(string location, int fileName, Mat image) {
+  stringstream fileNameSrc;
+  fileNameSrc << location << fileName << ".png";
+  imwrite(fileNameSrc.str(), image);
 }
 
-void Keys::saveSquares(const Mat &image, const vector<vector<Point> > &squares) {
+void Keys::getKeyTextFromSquares(const Mat &image,
+                                 const vector<vector<Point> > &squares) {
+  Mat element = getDilationStructuringElement();
+
   for (size_t i = 0; i < squares.size(); i++) {
     const Point *p = &squares[i][0];
-    if(p[2].x <= p[0].x || p[2].y <= p[0].y ){
-        continue;
+    if (p[2].x <= p[0].x || p[2].y <= p[0].y) {
+      continue;
     }
-    Rect ro(p[0].x, p[0].y,  p[2].x  - p[0].x, p[2].y - p[0].y );
-    if(contourArea(squares[i]) > MAX_AREA) {
-        return;
+    Rect ro(p[0].x, p[0].y, p[2].x - p[0].x, p[2].y - p[0].y);
+    if (contourArea(squares[i]) > MAX_AREA) {
+      return;
     }
 
     Mat src = image(ro);
     Mat grayImage;
     Mat thresholdedImage;
 
-    cvtColor(src,grayImage, CV_BGR2GRAY);
+    cvtColor(src, grayImage, CV_BGR2GRAY);
 
-    Mat element = getDilationStructuringElement();
+    //    saveImage("./ocr_temp_data/key-src", (int)i, grayImage);
 
     threshold(grayImage, thresholdedImage, 245, 255, THRESH_BINARY_INV);
+
+    // adaptiveThreshold(grayImage, thresholdedImage, 255,
+    // ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 3, 0);
 
     Mat dilatedImage;
 
     dilate(thresholdedImage, dilatedImage, element);
-   }
+    string keyText = ocr.readText(dilatedImage);
+
+    this->keyMap[p->x] = keyText;
+
+    //    saveImage("./ocr_temp_data/key", (int)i, dilatedImage);
+  }
 }
 
 int Keys::locate(Mat source) {
   vector<vector<Point> > squares;
 
   findSquares(source, squares);
-  saveSquares(source, squares);
+  getKeyTextFromSquares(source, squares);
   drawSquares(source, squares);
 
   return 0;
@@ -194,8 +233,7 @@ void Keys::remove_loose_ends(Mat canny) {
             count++;
           }
         }
-        if (count < 4)
-          data[i * step + j] = FG;
+        if (count < 4) data[i * step + j] = FG;
       }
     }
   }

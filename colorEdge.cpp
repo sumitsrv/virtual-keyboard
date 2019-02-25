@@ -47,8 +47,7 @@ void ColorEdge::colorEdge(Mat img, Mat copy) {
       else
         theta = (0.5) * PI;
       // theta = 45*PI/180;
-      if (theta < 0)
-        theta = theta + PI;
+      if (theta < 0) theta = theta + PI;
 
       theta = (0.5) * theta;
 

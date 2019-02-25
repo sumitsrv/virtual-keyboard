@@ -21,34 +21,15 @@ void Edge::drawEdge(Mat img) {
   width = width / scale;
 
   resize = Mat(Size(width, height), img.depth());
-  //        resize = cvCreateImage(cvSize(width, height), img->depth,
-  //        img->nChannels);
 
   grey = Mat(img.rows, img.cols, IPL_DEPTH_8U, 1);
   grey_eqz = Mat(img.rows, img.cols, IPL_DEPTH_8U, 1);
   edge = Mat(img.rows, img.cols, IPL_DEPTH_8U, 1);
 
-  //        grey  = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-  //        grey_eqz = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-  //        edge  = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-
   cvtColor(img, grey, CV_BGR2GRAY);
   Canny(grey, edge, 150, 200, 3);
-  imshow("Canny", edge);
   Mat color_dst = Mat(grey.rows, grey.cols, 8, 3);
   color_dst = getAndMarkLines(edge, edge, 255);
-
-  imshow("Image", img);
-  imshow("GRAY", grey);
-
-  imshow("Lines", color_dst);
-
-  cvWaitKey(0);
-  //        cvDestroyWindow("Canny");
-  //        cvDestroyWindow("Image");
-  //        cvDestroyWindow("GRAY");
-  //        edge = 0;
-  //        grey = 0;
 }
 
 Mat Edge::getAndMarkLines(Mat srcimg, Mat dstimg, int linecolor) {

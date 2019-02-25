@@ -228,6 +228,5 @@ void Contrast::lookUpTable(float *N, float left[], float right[],
     } else if (i >= right[*hist_size - 1]) {
       T[i] = 255;
     }
-
   }
 }

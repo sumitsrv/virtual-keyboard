@@ -1,16 +1,14 @@
 #ifndef EDGE_HPP
 #define EDGE_HPP
 
-#include <iostream>
 #include <math.h>
+#include <iostream>
 #include <opencv/cv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-#include <stdio.h>
-#include <stdlib.h>
 
 class Edge {
-public:
+ public:
   void drawEdge(cv::Mat img);
   cv::Mat getAndMarkLines(cv::Mat srcimg, cv::Mat dstimg, int linecolor);
 };

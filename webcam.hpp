@@ -8,8 +8,7 @@
 #include <opencv2/highgui.hpp>
 
 class WebCam {
-
-public:
+ public:
   typedef boost::signal<void(cv::Mat frame)> FrameGrabEvent;
 
   int capture(cv::VideoCapture, char *);
@@ -18,10 +17,12 @@ public:
   int end;
 
   void unsubscribeToCamStream(const boost::signals::connection &connection);
-  boost::signals::connection subscribeToCamStream(const FrameGrabEvent::slot_type &slot);
+  boost::signals::connection subscribeToCamStream(
+      const FrameGrabEvent::slot_type &slot);
 
-private:
+ private:
   boost::signals::connection frameGrabConnection;
   FrameGrabEvent frameGrabEvent;
 };
+
 #endif

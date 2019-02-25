@@ -5,21 +5,20 @@ using namespace cv;
 using namespace tesseract;
 
 OCR::OCR() {
-    ocr = new tesseract::TessBaseAPI();
-    // Initialize tesseract to use English (eng) and the LSTM OCR engine.
-    ocr->Init(NULL, "eng", tesseract::OEM_DEFAULT);
-    //    ocr->Init(NULL, "eng", tesseract::PSM_AUTO_ONLY);
-    // Set Page segmentation mode to PSM_AUTO (3)
-    ocr->SetPageSegMode(tesseract::PSM_RAW_LINE);
+  ocr = new tesseract::TessBaseAPI();
+  // Initialize tesseract to use English (eng) and the LSTM OCR engine.
+  ocr->Init(NULL, "eng", tesseract::OEM_DEFAULT);
+  //    ocr->Init(NULL, "eng", tesseract::PSM_AUTO_ONLY);
+  // Set Page segmentation mode to PSM_AUTO (3)
+  ocr->SetPageSegMode(tesseract::PSM_RAW_LINE);
 }
 
 String OCR::readText(Mat src) {
+  //   Set image data
+  ocr->SetImage(src.data, src.cols, src.rows, src.channels(), src.step);
 
-//   Set image data
-    ocr->SetImage(src.data, src.cols, src.rows, src.channels(), src.step);
-
-    // Run Tesseract OCR on image
-    return string(ocr->GetUTF8Text());
+  // Run Tesseract OCR on image
+  return string(ocr->GetUTF8Text());
 }
 
 void OCR::findX(Mat imgSrc, int *min, int *max) {

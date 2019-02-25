@@ -3,13 +3,13 @@
 using namespace cv;
 using namespace std;
 
-HandDetect::HandDetect(WebCam &webcam) {
+HandDetect::HandDetect(WebCam &webcam, Keys &keys) {
   this->frameGrabEventConnection = webcam.subscribeToCamStream(
       boost::bind(&HandDetect::getKeyPress, this, _1));
+  this->keys = &keys;
 }
 
 void HandDetect::getKeyPress(Mat frame) {
-
   printf("Frame received!\n");
 
   Size sz = Size(frame.cols, frame.rows);
@@ -18,7 +18,7 @@ void HandDetect::getKeyPress(Mat frame) {
   Mat hsv_mask = Mat(sz, 8, 1);
   Mat handview = Mat(sz, 8, 1);
   Scalar hsv_min = Scalar(5, 70, 0, 0);
-  Scalar hsv_max = Scalar(20, 150, 255, 0); // H-> 0-20
+  Scalar hsv_max = Scalar(20, 150, 255, 0);  // H-> 0-20
 
   cvtColor(frame, hsv_image, CV_BGR2HSV);
   inRange(hsv_image, hsv_min, hsv_max, hsv_mask);
@@ -64,27 +64,24 @@ void HandDetect::getKeyPress(Mat frame) {
   }
 }
 
-void HandDetect::preserveAndGetHandOutline(Mat src)
-{
-    size_t curr_pixel, step, x[src.cols];
-    uchar *data = src.data;
-    step = src.step;
+void HandDetect::preserveAndGetHandOutline(Mat src) {
+  size_t curr_pixel, step, x[src.cols];
+  uchar *data = src.data;
+  step = src.step;
 
-    int width = src.cols;
-    int height = src.rows;
-    for (int i = 0; i < width; i++) {
-      x[i] = 0;
-      for (int j = 0; j < height; j++) {
-        curr_pixel = data[j * step + i];
-        if ((curr_pixel == 255)) {
-          x[i] = j;
-        }
+  int width = src.cols;
+  int height = src.rows;
+  for (int i = 0; i < width; i++) {
+    x[i] = 0;
+    for (int j = 0; j < height; j++) {
+      curr_pixel = data[j * step + i];
+      if ((curr_pixel == 255)) {
+        x[i] = j;
       }
-
-      src.at<uchar>(0, i) = x[i];
-//      setReal1D(src, i, x[i]);
-      //    fprintf(tipgraph, "%d\n", x[i]);
     }
+
+    src.at<uchar>(0, i) = (uchar)x[i];
+  }
 }
 
 int HandDetect::getTipsCount(Mat img) {
@@ -103,8 +100,8 @@ int HandDetect::getTipsCount(Mat img) {
   // Applying filter to the transformed image source.
   for (int i = 0; i < width; i++) {
     if (i > 20) {
-        dst.at<uchar>(0, i, 0) = 0;
-//      cvSetReal1D(dst, i, 0);
+      dst.at<uchar>(0, i, 0) = 0;
+      //      cvSetReal1D(dst, i, 0);
     }
   }
 
@@ -115,14 +112,15 @@ int HandDetect::getTipsCount(Mat img) {
   for (int i = 1; i < width - 1; i++) {
     /*if ((cvGetReal1D(src, i + 1) - cvGetReal1D(src, i) <= 0 &&
          cvGetReal1D(src, i) - cvGetReal1D(src, i - 1) >= 0))*/
-      if ( - src.at<uchar>(0, i) <= 0 &&
-           src.at<uchar>(0, i) - src.at<uchar>(0, i-1) >= 0) {
+    if (-src.at<uchar>(0, i) <= 0 &&
+        src.at<uchar>(0, i) - src.at<uchar>(0, i - 1) >= 0) {
       tips_position[tipcount][0] = 0;
 
-      // Accumulate tip position over 7 adjacent pixels, eventually average them out in the next step.
+      // Accumulate tip position over 7 adjacent pixels, eventually average them
+      // out in the next step.
       for (int j = -3; j <= 3; j++) {
         if ((i + j) < width && (i + j) > 0) {
-          tips_position[tipcount][0] += src.at<uchar>(0, i+j);
+          tips_position[tipcount][0] += src.at<uchar>(0, i + j);
         }
       }
 
@@ -232,8 +230,7 @@ void HandDetect::correlatedTips(int tipCount) {
     if (speedscale == 2) {
       if (speed[i][1] == 0 || speed[i][1] == 1) {
         speed[i][1] = 1;
-        if (posmax == i)
-          speed[i][5] = 1;
+        if (posmax == i) speed[i][5] = 1;
       } else if (speed[i][1] != 0 && speed[i][2] == 0) {
         speed[i][2]++;
         speed[i][3] = oldtips[oldtipflag][i][0];
@@ -250,8 +247,7 @@ void HandDetect::correlatedTips(int tipCount) {
     } else {
       if (speed[i][1] != 0 && speed[i][2] == 0) {
         speed[i][1]++;
-        if (posmax == i)
-          speed[i][5] = 1;
+        if (posmax == i) speed[i][5] = 1;
       } else if (speed[i][1] != 0 && speed[i][2] != 0) {
         speed[i][2]++;
       }

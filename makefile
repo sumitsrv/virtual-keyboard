@@ -1,7 +1,7 @@
 all: vk
 
 clean:
-	rm -rf *.o
+	rm -rf *.o vk
 
 vk: main.o webcam.o edge.o haar.o keys.o colorEdge.o contrast.o ocr.o handdetect.o
 	g++ -Wall -std=c++11 `pkg-config tesseract opencv --cflags --libs` -I /usr/local/include/ -L/usr/local/lib/ -lboost_signals -o vk main.o haar.o edge.o keys.o webcam.o colorEdge.o contrast.o ocr.o handdetect.o
