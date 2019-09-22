@@ -7,6 +7,26 @@ HandDetect::HandDetect(WebCam &webcam, Keys &keys) {
   this->frameGrabEventConnection = webcam.subscribeToCamStream(
       boost::bind(&HandDetect::getKeyPress, this, _1));
   this->keys = &keys;
+
+  for (int i = 0; i < FRAMERUN; i++) {
+    for (int j = 0; j < 11; j++) {
+      for (int k = 0; k < 4; k++) {
+        oldtips[i][j][k] = 0;
+      }
+    }
+  }
+
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 2; j++) {
+      tips_position[i][j] = 0;
+    }
+  }
+
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 7; j++) {
+      speed[i][j] = 0.0;
+    }
+  }
 }
 
 void HandDetect::getKeyPress(Mat frame) {
@@ -25,7 +45,7 @@ void HandDetect::getKeyPress(Mat frame) {
   medianBlur(hsv_mask, handview, 5);
   dilate(handview, handview, noArray(), Point(-1, -1), 3);
   vector<vector<Point> > contours;
-
+  imshow("hand", handview);
   findContours(handview, contours, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
 
   for (size_t i = 0; i < contours.size(); i++) {
@@ -155,7 +175,7 @@ int HandDetect::getTipsCount(Mat img) {
  * @param tipCount
  */
 int HandDetect::getMaxSpeedFingerIndex(int tipCount) {
-  int max = 0;
+  float max = 0;
   float speedscale = 1;
   int posmax = -1;
 

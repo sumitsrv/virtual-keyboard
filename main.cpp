@@ -11,27 +11,26 @@ int main(int argc, char *argv[]) {
   Keys keys = Keys();
 
   // Hand detection module initialized to listen to frames captured by webcam.
-  HandDetect *handdetect = new HandDetect(webcam, keys);
-  VideoCapture capture;
+  new HandDetect(webcam, keys);
   Mat img;
+
+  /* initialize camera */
+  VideoCapture capture = VideoCapture(0);
+
+  capture.set(CV_CAP_PROP_FRAME_WIDTH, 10000);
+  capture.set(CV_CAP_PROP_FRAME_HEIGHT, 10000);
+
+  /* always check */
+  if (!capture.isOpened()) {
+    fprintf(stderr, "Cannot open initialize webcam!\n");
+    fprintf(stderr, "Usage: loadimg <filename> <cam(1)/image(2)>\n");
+    return 1;
+  }
 
   if (argc < 3) {
     fprintf(stderr, "Usage: loadimg <filename> <cam(1)/image(2)>\n");
     return 1;
   } else if (argv[2][0] == '1') {
-    /* initialize camera */
-    capture = VideoCapture(0);
-
-    capture.set(CV_CAP_PROP_FRAME_WIDTH, 10000);
-    capture.set(CV_CAP_PROP_FRAME_HEIGHT, 10000);
-
-    /* always check */
-    if (!capture.isOpened()) {
-      fprintf(stderr, "Cannot open initialize webcam!\n");
-      fprintf(stderr, "Usage: loadimg <filename> <cam(1)/image(2)>\n");
-      return 1;
-    }
-
     webcam.capture(capture, argv[1]);
     img = imread(argv[1], -1);
   } else if (argv[2][0] == '2') {
@@ -61,7 +60,7 @@ int main(int argc, char *argv[]) {
 
   imshow("Keys", img);
 
-  waitKey(5000);
+  waitKey(1000);
   webcam.stream(capture);
 
   return 0;
